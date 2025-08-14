@@ -4,6 +4,17 @@ const socketIo = require('socket.io');
 const cors = require('cors');
 require('dotenv').config();
 
+// Database connection
+const connectDB = require('./config/database');
+
+// Models
+const Teacher = require('./models/Teacher');
+const Student = require('./models/Student');
+const Poll = require('./models/Poll');
+
+// Connect to MongoDB
+connectDB();
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -24,11 +35,44 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static('public'));
 
-// In-memory storage for demo purposes (use a database in production)
-const teachers = new Map();
-const students = new Map();
-const quizzes = new Map();
+// In-memory storage for active connections (still needed for socket management)
+const activeTeachers = new Map(); // socketId -> teacher data
+const activeStudents = new Map(); // socketId -> student data
 const quizSessions = new Map();
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    message: 'Server is running',
+    database: 'Connected to MongoDB Atlas',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Test database connection endpoint
+app.get('/api/db-test', async (req, res) => {
+  try {
+    const teacherCount = await Teacher.countDocuments();
+    const studentCount = await Student.countDocuments();
+    const pollCount = await Poll.countDocuments();
+    
+    res.json({
+      status: 'Database Connected',
+      collections: {
+        teachers: teacherCount,
+        students: studentCount,
+        polls: pollCount
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'Database Error',
+      error: error.message
+    });
+  }
+});
 
 // Authentication routes
 app.post('/api/auth/teacher/register', (req, res) => {
@@ -281,7 +325,6 @@ app.post('/api/auth/student/join', (req, res) => {
 
 // Store for active polls and participants
 const activePollsMap = new Map();
-const activeTeachers = new Map();
 
 // Socket.io connection handling
 io.on('connection', (socket) => {

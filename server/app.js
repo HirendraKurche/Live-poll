@@ -17,19 +17,29 @@ connectDB();
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000", // React client URL
-    methods: ["GET", "POST"]
-  }
-});
 
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// CORS origins configuration
+const allowedOrigins = [
+  'http://localhost:3000',  // Development frontend
+  'https://live-poll-345s.onrender.com',  // Production frontend
+  process.env.CLIENT_URL  // Environment variable (if different)
+].filter(Boolean); // Remove any undefined values
+
+// Socket.IO with CORS configuration
+const io = socketIo(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
+
+// Express middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:3000",
-  methods: ["GET", "POST"],
+  origin: allowedOrigins,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true
 }));
 app.use(express.json());
@@ -75,7 +85,7 @@ app.get('/api/db-test', async (req, res) => {
 });
 
 // Authentication routes
-app.post('/api/auth/teacher/register', (req, res) => {
+app.post('/api/auth/teacher/register', async (req, res) => {
   try {
     const { username, email, password, firstName, lastName } = req.body;
     
@@ -88,43 +98,55 @@ app.post('/api/auth/teacher/register', (req, res) => {
     }
     
     // Check if teacher already exists
-    if (teachers.has(username) || Array.from(teachers.values()).some(t => t.email === email)) {
+    const existingTeacher = await Teacher.findOne({
+      $or: [{ email }, { name: username }]
+    });
+    
+    if (existingTeacher) {
       return res.status(400).json({
         success: false,
         message: 'Username or email already exists'
       });
     }
     
-    const teacher = {
-      id: Date.now().toString(),
-      username,
+    // Create new teacher
+    const teacher = new Teacher({
+      name: `${firstName} ${lastName}`,
       email,
-      firstName,
-      lastName,
-      createdAt: new Date().toISOString()
-    };
+      password, // In production, hash this password!
+      room: null,
+      socketId: null,
+      isActive: false
+    });
     
-    teachers.set(username, { ...teacher, password });
+    await teacher.save();
     
     // Generate a simple token (use JWT in production)
-    const token = Buffer.from(`${username}:${Date.now()}`).toString('base64');
+    const token = Buffer.from(`${teacher._id}:${Date.now()}`).toString('base64');
     
     res.json({
       success: true,
       data: {
-        teacher,
+        teacher: {
+          id: teacher._id,
+          name: teacher.name,
+          email: teacher.email,
+          room: teacher.room,
+          isActive: teacher.isActive
+        },
         token
       }
     });
   } catch (error) {
+    console.error('Teacher registration error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error during registration'
+      message: 'Internal server error'
     });
   }
 });
 
-app.post('/api/auth/teacher/login', (req, res) => {
+app.post('/api/auth/teacher/login', async (req, res) => {
   try {
     const { login, password } = req.body;
     
@@ -135,9 +157,10 @@ app.post('/api/auth/teacher/login', (req, res) => {
       });
     }
     
-    // Find teacher by username or email
-    const teacher = teachers.get(login) || 
-      Array.from(teachers.values()).find(t => t.email === login);
+    // Find teacher by email or name
+    const teacher = await Teacher.findOne({
+      $or: [{ email: login }, { name: login }]
+    });
     
     if (!teacher || teacher.password !== password) {
       return res.status(401).json({
@@ -147,22 +170,26 @@ app.post('/api/auth/teacher/login', (req, res) => {
     }
     
     // Generate a simple token
-    const token = Buffer.from(`${teacher.username}:${Date.now()}`).toString('base64');
-    
-    // Remove password from response
-    const { password: _, ...teacherData } = teacher;
+    const token = Buffer.from(`${teacher._id}:${Date.now()}`).toString('base64');
     
     res.json({
       success: true,
       data: {
-        teacher: teacherData,
+        teacher: {
+          id: teacher._id,
+          name: teacher.name,
+          email: teacher.email,
+          room: teacher.room,
+          isActive: teacher.isActive
+        },
         token
       }
     });
   } catch (error) {
+    console.error('Teacher login error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error during login'
+      message: 'Internal server error'
     });
   }
 });

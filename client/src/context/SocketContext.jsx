@@ -16,7 +16,10 @@ export const SocketProvider = ({ children }) => {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const newSocket = io('http://localhost:5000', {
+    // Use environment variable or default to localhost for development
+    const serverUrl = process.env.REACT_APP_SERVER_URL || 'http://localhost:5000';
+    
+    const newSocket = io(serverUrl, {
       transports: ['polling', 'websocket'],
       upgrade: true,
       timeout: 20000,

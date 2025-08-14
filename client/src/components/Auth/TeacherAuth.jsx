@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import API_BASE_URL from '../../config/api';
 import './TeacherAuth.css';
 
 const TeacherAuth = ({ onAuthSuccess }) => {
@@ -40,7 +41,7 @@ const TeacherAuth = ({ onAuthSuccess }) => {
             lastName: formData.lastName
           };
 
-      const response = await axios.post(`http://localhost:5000${endpoint}`, payload);
+      const response = await axios.post(`${API_BASE_URL}${endpoint}`, payload);
 
       if (response.data.success) {
         localStorage.setItem('teacherToken', response.data.data.token);

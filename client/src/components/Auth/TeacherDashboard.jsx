@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import API_BASE_URL from '../../config/api';
 import './TeacherDashboard.css';
 
 const TeacherDashboard = ({ teacher, token, onQuizSelect, onLogout }) => {
@@ -19,7 +20,7 @@ const TeacherDashboard = ({ teacher, token, onQuizSelect, onLogout }) => {
   const fetchQuizzes = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/auth/teacher/quizzes', {
+      const response = await axios.get(`${API_BASE_URL}/api/auth/teacher/quizzes`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -48,7 +49,7 @@ const TeacherDashboard = ({ teacher, token, onQuizSelect, onLogout }) => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/quiz/create', newQuiz, {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/quiz/create`, newQuiz, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -93,7 +94,7 @@ const TeacherDashboard = ({ teacher, token, onQuizSelect, onLogout }) => {
     }
 
     try {
-      const response = await axios.delete(`http://localhost:5000/api/auth/quiz/${quizId}`, {
+      const response = await axios.delete(`${API_BASE_URL}/api/auth/quiz/${quizId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

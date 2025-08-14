@@ -87,6 +87,7 @@ app.get('/api/db-test', async (req, res) => {
 // Authentication routes
 app.post('/api/auth/teacher/register', async (req, res) => {
   try {
+    console.log('Registration request body:', req.body);
     const { username, email, password, firstName, lastName } = req.body;
     
     // Basic validation
@@ -150,6 +151,8 @@ app.post('/api/auth/teacher/login', async (req, res) => {
   try {
     const { login, password } = req.body;
     
+    console.log('Login attempt:', { login, passwordLength: password?.length });
+    
     if (!login || !password) {
       return res.status(400).json({
         success: false,
@@ -162,7 +165,17 @@ app.post('/api/auth/teacher/login', async (req, res) => {
       $or: [{ email: login }, { name: login }]
     });
     
-    if (!teacher || teacher.password !== password) {
+    console.log('Teacher found:', teacher ? { name: teacher.name, email: teacher.email, hasPassword: !!teacher.password } : 'No teacher found');
+    
+    if (!teacher) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+    
+    if (teacher.password !== password) {
+      console.log('Password mismatch:', { provided: password, stored: teacher.password });
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'

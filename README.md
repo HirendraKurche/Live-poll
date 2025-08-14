@@ -88,3 +88,4 @@ npm run client
 - [ ] Chat popup for interaction between students and teachers
 - [ ] Teacher can view past poll results (not stored locally)
 "# Live-Poll" 
+"# Live-poll" 

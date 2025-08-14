@@ -1,0 +1,146 @@
+/* KickOutPage.css */
+.kickout-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+}
+
+.kickout-content {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kickout-icon {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.kickout-icon svg {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.kickout-title {
+  color: #ef4444;
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0 0 16px 0;
+}
+
+.kickout-message {
+  color: #374151;
+  font-size: 18px;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.kickout-details {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.kickout-details p {
+  color: #6b7280;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.kickout-details ul {
+  color: #6b7280;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.kickout-details li {
+  margin-bottom: 6px;
+}
+
+.kickout-actions {
+  margin-bottom: 24px;
+}
+
+.return-home-btn {
+  background: #7765da;
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.return-home-btn:hover {
+  background: #4f46e5;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+}
+
+.kickout-footer {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 16px;
+}
+
+.kickout-footer p {
+  color: #9ca3af;
+  font-size: 14px;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .kickout-content {
+    padding: 30px 20px;
+  }
+  
+  .kickout-title {
+    font-size: 24px;
+  }
+  
+  .kickout-message {
+    font-size: 16px;
+  }
+  
+  .kickout-icon svg {
+    width: 60px;
+    height: 60px;
+  }
+}
